@@ -30,15 +30,17 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files（存放密鑰，絕對不能 commit）
+# local env files（金鑰、密鑰不能進 git）
 .env
 .env*.local
 
 # typescript
 *.tsbuildinfo
 
-example
-
 # generated native folders
 /ios
 /android
+
+# Hibi：網頁 Demo 輸出、測試暫存
+dist-demo/
+scripts/tmp/

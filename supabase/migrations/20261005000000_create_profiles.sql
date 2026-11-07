@@ -1,5 +1,8 @@
+-- 來自舊版 japanessapp 的「設定改存到 Supabase」分支（2026-10-05），目前 Hibi 還沒接上後端，
+-- 留作下一階段「雲端同步與伺服器端 AI」的起點，規劃見 docs/產品規劃.md。
+--
 -- 使用者設定：每個使用者一筆，id 就是登入帳號的 id。
--- level、goals 的值要和 src/constants/profile-options.ts 一致。
+-- level、goals 的值要和 src/core/profile.ts 一致。
 create table public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   level text not null
