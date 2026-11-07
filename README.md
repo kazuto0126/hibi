@@ -58,7 +58,7 @@ AI 功能（選用）：到 [Google AI Studio](https://aistudio.google.com/apike
 
 | 時間 | 內容 |
 | --- | --- |
-| 2026 年 10 月 | 第一版原型 japanessapp：Expo Router 骨架、首次設定、Supabase 匿名登入與 profiles 資料表（RLS）。保留在最早的三個 commit，標記為 `v0-japanessapp` |
+| 2026 年 10 月 | 第一版原型 japanessapp：Expo Router 骨架、首次設定、Supabase 匿名登入與 profiles 資料表（RLS）。保留在最早的三個 commit（到 `9ea1536` 為止） |
 | 2026 年 11 月 | 改寫成 Hibi：FSRS 複習、日記挑卡、問 AI、網頁 Demo；移植原型的首次設定與資料表定義 |
 
 每次 push，GitHub Actions 會自動跑型別檢查和全部測試（`.github/workflows/ci.yml`）。
