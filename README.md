@@ -92,10 +92,11 @@ flowchart TB
 ```
 src/
   core/        純邏輯：fsrs、scheduler、deck、stats、ruby（假名標註）、romaji、profile（學習者設定）、repo、sim、ai/、data/（詞庫）
+               optimize（參數訓練）、autodiff（自動微分）、calibration（評估指標）、learner（虛擬學習者）
   platform/    AsyncStorage、語音、字型（.web.ts 為網頁版）、claude.ai 偵測
   state/       store.ts
   ui/          theme、components（RubyText、MasuWord…）、screens
-scripts/       網頁 Demo 打包、端對端測試、字型子集化
+scripts/       網頁 Demo 打包、端對端測試、字型子集化、參數訓練實驗
 supabase/      雲端資料表定義（profiles＋RLS，下一階段才會接上）
 docs/          產品規劃、導讀、口試問答、截圖
 ```
@@ -114,15 +115,17 @@ docs/          產品規劃、導讀、口試問答、截圖
 | 複習紀錄**按月份分段**儲存 | Android 的 AsyncStorage 單筆超過約 2MB 會讀不出來，紀錄會隨使用一直增加 |
 | API Key 只存在裝置、**備份不匯出** | 備份檔可能被分享；正式上架應改成經由自己的後端呼叫 |
 | 不用 Expo Router | 網頁版要打包成單一 HTML 發布在 claude.ai，那裡不能用路徑式網址 |
+| 參數訓練**自己寫，再和官方 fsrs-rs 對照** | 用前向模式自動微分算梯度、Adam 訓練；同一份資料交給官方訓練程式，比較兩邊在測試集上的誤差（見[實驗報告](docs/實驗報告.md)） |
 | 羅馬拼音**自己寫規則，用形態素分析器當參考答案** | 助詞「は」念 wa、「へ」念 e，光看假名分不出來；kuromoji 的辭典壓縮後就有 18MB，放不進 App，所以寫輕量規則，再用 kuromoji 的詞性結果逐句比對整個內建詞庫 |
 
 ## 測試
 
 ```bash
-npm test             # 117 個單元測試
+npm test             # 139 個單元測試
 npm run typecheck
 npm run demo:build   # 網頁版 → dist-demo/index.html
 npm run demo:smoke   # 無頭 Chrome 走過 11 個主要流程並截圖（Windows 先設定 CHROME_PATH）
+npm run experiment   # 參數訓練實驗，約 2 分鐘（另外 pip install fsrs-rs-python 會同時跑官方對照）
 ```
 
 - **FSRS 對照測試**：與開源參考實作 ts-fsrs 6.0.0 逐步比對穩定度、難度、間隔、可提取率，兩種模式各 2,000 組序列
@@ -130,10 +133,11 @@ npm run demo:smoke   # 無頭 Chrome 走過 11 個主要流程並截圖（Window
 - **內建詞庫讀音檢查**：用 kuromoji（日文形態素分析器）自動比對 116 項的人工讀音標註；分析器讀錯的 15 處經人工確認後列入白名單並註明理由
 - **羅馬拼音檢查**：同一個分析器依詞性把助詞「は／へ」換成「わ／え」當參考答案，比對內建詞庫一百多句的羅馬拼音
 - **AI 層**：用假的 fetch 測試 Gemini 請求格式、錯誤分類（金鑰無效、額度用完、找不到模型、斷線）、輸出格式容錯
+- **參數訓練**：自動微分的梯度和有限差分一致；用預設參數重播紀錄，預測值和 App 當時記下的完全相同；評估程式和官方 fsrs-rs 在 165 次實驗中結果一致（差異 < 10⁻⁶）
 
 ## 限制與下一步
 
-- **個人化參數**：目前用 FSRS 預設參數。累積足夠的複習紀錄後，可以用自己的資料訓練參數，並用 log loss 比較訓練前後
+- **個人化參數**：訓練程式和模擬實驗已完成（[實驗報告](docs/實驗報告.md)）：約累積 2 個月、1,500 次以上的複習後，訓練出的參數才穩定比預設準。App 裡還沒有訓練按鈕，是下一步
 - **真人資料的評估**：示範資料是模擬學習者產生的，「實際記憶率接近預測」在模擬裡是必然結果，不能當成證據；需要真實使用者的紀錄做校準分析
 - **推薦品質的評估**：AI 挑的卡片，使用者採納了幾成？採納的卡片之後記得比較好嗎？
 - **羅馬拼音的助詞判斷是規則式的**：內建詞庫全部對過，但 AI 產生的新句子偶爾可能把「は」念錯
@@ -141,8 +145,9 @@ npm run demo:smoke   # 無頭 Chrome 走過 11 個主要流程並截圖（Window
 
 ## 文件
 
+- [docs/實驗報告.md](docs/實驗報告.md)：用自己的複習紀錄訓練 FSRS 參數，要累積多少才划算？（33 個虛擬學習者、和官方程式對照）
 - [docs/產品規劃.md](docs/產品規劃.md)：產品方向、10 個開發階段與目前進度（從舊版 japanessapp 延續）
-- [docs/導讀.md](docs/導讀.md)：用零碎時間讀懂這個專案（12 堂，每堂 10～20 分鐘）
+- [docs/導讀.md](docs/導讀.md)：用零碎時間讀懂這個專案（13 堂，每堂 10～20 分鐘）
 - [docs/口試問答.md](docs/口試問答.md)：推甄口試、面試可能被問的問題與回答方向
 
 ## 授權
@@ -153,4 +158,4 @@ npm run demo:smoke   # 無頭 Chrome 走過 11 個主要流程並截圖（Window
 
 ### English summary
 
-Hibi turns your day into Japanese flashcards. A short onboarding asks for your level (from absolute beginner to JLPT N1), goals and interests. Write a few lines about your day in Chinese; an LLM (Gemini with your own key, Claude inside the claude.ai demo, or an offline demo mode) extracts words, phrases and grammar you will actually need, with furigana in a `{漢字|かな}` markup. Reviews are scheduled by a from-scratch FSRS-6 implementation that is differentially tested against the reference ts-fsrs library. Beginners also get Hepburn romaji, with particles (は→wa) resolved by lightweight rules checked against the kuromoji morphological analyzer. Built with Expo SDK 58 / React Native 0.88 / TypeScript; the core logic is framework-free and covered by 117 Vitest tests, plus a headless-Chrome end-to-end smoke test.
+Hibi turns your day into Japanese flashcards. A short onboarding asks for your level (from absolute beginner to JLPT N1), goals and interests. Write a few lines about your day in Chinese; an LLM (Gemini with your own key, Claude inside the claude.ai demo, or an offline demo mode) extracts words, phrases and grammar you will actually need, with furigana in a `{漢字|かな}` markup. Reviews are scheduled by a from-scratch FSRS-6 implementation that is differentially tested against the reference ts-fsrs library. Beginners also get Hepburn romaji, with particles (は→wa) resolved by lightweight rules checked against the kuromoji morphological analyzer. Built with Expo SDK 58 / React Native 0.88 / TypeScript; the core logic is framework-free and covered by 139 Vitest tests, plus a headless-Chrome end-to-end smoke test. A simulation study ([docs/實驗報告.md](docs/實驗報告.md)) trains personalized FSRS parameters with a hand-written forward-mode autodiff optimizer, benchmarks it against the official fsrs-rs optimizer on 33 virtual learners, and finds that personalization starts to pay off after about two months (~1,500 reviews) of data.

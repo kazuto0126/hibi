@@ -25,6 +25,7 @@
     "prettier": "^3.9.10",
     "puppeteer-core": "^25.16.0",
     "ts-fsrs": "6.0.0",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3",
     "vitest": "^5.1.0"
   },
@@ -36,9 +37,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\" App.tsx index.ts \"scripts/*.mjs\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\" App.tsx index.ts \"scripts/*.{mjs,ts}\"",
     "demo:build": "expo export --platform web --output-dir dist && node scripts/build-web-demo.mjs",
-    "demo:smoke": "node scripts/smoke-web.mjs"
+    "demo:smoke": "node scripts/smoke-web.mjs",
+    "experiment": "tsx scripts/experiment.ts"
   },
   "private": true,
   "description": "Hibi 日々：從你的日常學日文。寫下今天，AI 挑出你明天用得到的單字，FSRS 演算法安排複習。"
